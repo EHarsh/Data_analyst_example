@@ -1,0 +1,75 @@
+Задача 1
+
+Select 
+acc_id,
+DISTINCT whs_id,
+min(trn_date) as first_buy
+from transactions
+GROUP BY
+acc_id,
+whs_id
+
+Задача 2 
+
+Select 
+    acc_id,
+    whs_id,
+    lag(trn_date, 1) OVER w As last_trn
+    From test.transactions
+    GROUP BY acc_id, trn_date
+    Where (last_trn - trn_date) >'8 week'
+    WINDOW w AS
+        (
+        PARTITION BY acc_id
+        ORDER BY trn_date
+        )
+    )as l
+INNER JOIN(
+    Select 
+    whs_id
+    from test.warehouses
+    where frmt_name = 'Hyper' or frmt_name = 'Super')  as r
+on l.whs_id = r.whs_id
+UNION ALL
+Select 
+    acc_id,
+    whs_id,
+    lag(trn_date, 1) OVER w As last_trn
+    From test.transactions
+    GROUP BY acc_id, trn_date
+    Where (last_trn - trn_date) >'4 week'
+    WINDOW w AS
+        (
+        PARTITION BY acc_id
+        ORDER BY trn_date
+        )
+    )as l
+INNER JOIN(
+    Select 
+    whs_id
+    from test.warehouses
+    where frmt_name = 'Home')  as r
+on l.whs_id = r.whs_id
+
+
+Задача 3
+Select 
+DISTINCT acc_id
+from (
+	Select
+	acc_id,
+	trn_id, 
+	total, 
+	trn_date
+	from transactions
+ )as l
+Right join (
+	Select trn_id
+	From test.products 
+	where art_id in ('4', '7884') and qnty >=3
+ )as r 
+on r.trn_id = l.trn_id 
+where trn_date BETWEEN '2020-01-01' AND '2020-03-01' AND total > 800
+GROUP BY
+acc_id
+ORDER BY acc_id
