@@ -11,6 +11,7 @@ whs_id
 
 Задача 2 
 
+
 Select 
     acc_id,
     whs_id,
